@@ -1,9 +1,11 @@
 pub enum Token {
+    Illegal,
+
     // Operators
-    ASSIGN,
-    PLUS,
-    MINUS,
-    BANG,
-    FSLASH,
-    ASTERISK,
+    Assign,
+    Plus,
+    Minus,
+    Bang,
+    FSlash,
+    Asterisk,
 }
