@@ -11,9 +11,9 @@ env:
   TOOLCHAIN: stable
 
 jobs:
-  init-env:
-    name: Initialize Environment
-    timeout-minutes: 10
+  ci:
+    name: CI
+    timeout-minutes: 15
     strategy:
       matrix:
         os:
@@ -33,66 +33,14 @@ jobs:
       - name: Cache
         uses: Swatinem/rust-cache@v2
 
-  format:
-    name: Format
-    timeout-minutes: 10
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
-    runs-on: ${{matrix.os}}
-    needs: init-env
-
-    steps:
-      - name: Run Format
+      - name: Format
         run: cargo fmt --all
 
-  lint:
-    name: Lint
-    timeout-minutes: 10
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
-    runs-on: ${{matrix.os}}
-    needs: init-env
-
-    steps:
-      - name: Run Lint
+      - name: Lint
         run: cargo clippy --all-targets --all-features
 
-  test:
-    name: Test
-    timeout-minutes: 10
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
-    runs-on: ${{matrix.os}}
-    needs: init-env
-
-    steps:
-      - name: Run Tests
+      - name: Tests
         run: cargo test --verbose
 
-  build:
-    name: Build
-    timeout-minutes: 10
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
-    runs-on: ${{matrix.os}}
-    needs: init-env
-
-    steps:
-      - name: Run Build
+      - name: Build
         run: cargo build --release --verbose
