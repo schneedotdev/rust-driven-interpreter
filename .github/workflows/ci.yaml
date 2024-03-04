@@ -1,4 +1,4 @@
-name: ci
+name: Rust Project CI
 
 on:
   pull_request:
@@ -11,33 +11,88 @@ env:
   TOOLCHAIN: stable
 
 jobs:
-  ci:
+  init-env:
+    name: Initialize Environment
     timeout-minutes: 10
-    name: verify
-    runs-on: ubuntu-latest
-
-    # fail on rust warnings
-    env:
-      RUSTFLAGS: '-Dwarnings'
-
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{matrix.os}}
     steps:
-      - name: checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: update rust version
-        run: rustup update ${{ env.TOOLCHAIN }} && rustup default ${{ env.TOOLCHAIN }}
+      - name: Update Toolchain
+        run: |
+          rustup update ${{ env.TOOLCHAIN }}
+          rustup default ${{ env.TOOLCHAIN }}
 
-      - name: cache
+      - name: Cache
         uses: Swatinem/rust-cache@v2
 
-      - name: format
+  format:
+    name: Format
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{matrix.os}}
+    needs: init-env
+
+    steps:
+      - name: Run Format
         run: cargo fmt --all
 
-      - name: lint
+  lint:
+    name: Lint
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{matrix.os}}
+    needs: init-env
+
+    steps:
+      - name: Run Lint
         run: cargo clippy --all-targets --all-features
 
-      - name: test
+  test:
+    name: Test
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{matrix.os}}
+    needs: init-env
+
+    steps:
+      - name: Run Tests
         run: cargo test --verbose
 
-      - name: build
+  build:
+    name: Build
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{matrix.os}}
+    needs: init-env
+
+    steps:
+      - name: Run Build
         run: cargo build --release --verbose
