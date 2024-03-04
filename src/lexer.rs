@@ -12,8 +12,12 @@ impl<'a> Lexer<'a> {
             input: input.chars(),
         }
     }
+}
 
-    pub fn next_token(&mut self) -> Option<Token> {
+impl<'a> Iterator for Lexer<'a> {
+    type Item = Token;
+
+    fn next(&mut self) -> Option<Self::Item> {
         self.input.find(|c| !c.is_whitespace()).and_then(|c| {
             Some(match c {
                 '=' => Token::Assign,
@@ -31,24 +35,24 @@ impl<'a> Lexer<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn should_lex_single_character_tokens() {
         let mut lexer = Lexer::new("+=  -/* !");
-        
-        let token = lexer.next_token();
+
+        let token = lexer.next();
         assert_eq!(token, Some(Token::Plus));
-        let token = lexer.next_token();
+        let token = lexer.next();
         assert_eq!(token, Some(Token::Assign));
-        let token = lexer.next_token();
+        let token = lexer.next();
         assert_eq!(token, Some(Token::Minus));
-        let token = lexer.next_token();
+        let token = lexer.next();
         assert_eq!(token, Some(Token::FSlash));
-        let token = lexer.next_token();
+        let token = lexer.next();
         assert_eq!(token, Some(Token::Asterisk));
-        let token = lexer.next_token();
+        let token = lexer.next();
         assert_eq!(token, Some(Token::Bang));
-        let token = lexer.next_token();
+        let token = lexer.next();
         assert_eq!(token, None);
     }
 }
