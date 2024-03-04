@@ -27,6 +27,7 @@ impl<'a> Iterator for Lexer<'a> {
             '/' => Token::FSlash,
             '!' => Token::Bang,
             '*' => Token::Asterisk,
+            ';' => Token::Semicolon,
             _ if c.is_alphabetic() => {
                 let mut token = c.to_string();
                 while let Some(next_char) = self.input.next_if(|c| c.is_alphabetic()) {
@@ -62,9 +63,13 @@ mod tests {
 
     #[test]
     fn should_lex_identifiers() {
-        let tokens = Lexer::new("let").collect::<Vec<_>>();
+        let tokens = Lexer::new("le;t").collect::<Vec<_>>();
 
-        let expected_tokens = vec![Token::Ident("let".to_string())];
+        let expected_tokens = vec![
+            Token::Ident("le".to_string()),
+            Token::Semicolon,
+            Token::Ident("t".to_string()),
+        ];
 
         assert_eq!(tokens, expected_tokens);
     }

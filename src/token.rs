@@ -11,4 +11,5 @@ pub enum Token {
     Bang,
     FSlash,
     Asterisk,
+    Semicolon,
 }
