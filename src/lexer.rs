@@ -28,6 +28,13 @@ impl<'a> Iterator for Lexer<'a> {
             '!' => Token::Bang,
             '*' => Token::Asterisk,
             ';' => Token::Semicolon,
+            ',' => Token::Comma,
+            '(' => Token::LParen,
+            ')' => Token::RParen,
+            '{' => Token::LBrace,
+            '}' => Token::RBrace,
+            '<' => Token::LessThan,
+            '>' => Token::GreaterThan,
             _ if c.is_alphabetic() => {
                 let mut token = c.to_string();
                 while let Some(next_char) = self.input.next_if(|c| c.is_alphabetic()) {
@@ -47,15 +54,21 @@ mod tests {
 
     #[test]
     fn should_lex_single_character_tokens() {
-        let tokens = Lexer::new("+=  -/* !").collect::<Vec<_>>();
+        let tokens = Lexer::new(",;=+-!/*(){}").collect::<Vec<_>>();
 
         let expected_tokens = vec![
-            Token::Plus,
+            Token::Comma,
+            Token::Semicolon,
             Token::Assign,
+            Token::Plus,
             Token::Minus,
+            Token::Bang,
             Token::FSlash,
             Token::Asterisk,
-            Token::Bang,
+            Token::LParen,
+            Token::RParen,
+            Token::LBrace,
+            Token::RBrace,
         ];
 
         assert_eq!(tokens, expected_tokens);

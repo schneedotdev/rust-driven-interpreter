@@ -1,7 +1,6 @@
 #[derive(Debug, PartialEq)]
 pub enum Token {
-    Illegal,
-
+    // Identifiers
     Ident(String),
 
     // Operators
@@ -11,5 +10,19 @@ pub enum Token {
     Bang,
     FSlash,
     Asterisk,
+
+    // Delimiters
     Semicolon,
+    Comma,
+    LParen,
+    RParen,
+    LBrace,
+    RBrace,
+
+    // Comparison
+    LessThan,
+    GreaterThan,
+
+    // Other
+    Illegal,
 }
