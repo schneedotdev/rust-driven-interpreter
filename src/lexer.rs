@@ -54,7 +54,7 @@ mod tests {
 
     #[test]
     fn should_lex_single_character_tokens() {
-        let tokens = Lexer::new(",;=+-!/*(){}").collect::<Vec<_>>();
+        let tokens = Lexer::new(",;=+-!/*(){}<>").collect::<Vec<_>>();
 
         let expected_tokens = vec![
             Token::Comma,
@@ -69,6 +69,8 @@ mod tests {
             Token::RParen,
             Token::LBrace,
             Token::RBrace,
+            Token::LessThan,
+            Token::GreaterThan,
         ];
 
         assert_eq!(tokens, expected_tokens);
