@@ -12,6 +12,18 @@ impl<'a> Lexer<'a> {
             input: input.chars().peekable(),
         }
     }
+
+    fn group_while<F>(&mut self, start: char, condition: &F) -> String
+    where
+        F: Fn(&char) -> bool,
+    {
+        let mut group = start.to_string();
+        while let Some(character) = self.input.next_if(condition) {
+            group.push(character)
+        }
+
+        group
+    }
 }
 
 impl<'a> Iterator for Lexer<'a> {
@@ -36,20 +48,13 @@ impl<'a> Iterator for Lexer<'a> {
             '<' => Token::LessThan,
             '>' => Token::GreaterThan,
             _ if c.is_alphabetic() => {
-                let mut token = c.to_string();
-                while let Some(character) = self.input.next_if(|c| c.is_alphabetic()) {
-                    token.push(character)
-                }
-
-                Token::Ident(token)
+                let value = self.group_while(c, &|next_char: &char| next_char.is_alphabetic());
+                Token::Ident(value)
             }
             _ if c.is_numeric() => {
-                let mut token = c.to_string();
-                while let Some(character) = self.input.next_if(|c| c.is_numeric()) {
-                    token.push(character)
-                }
+                let value = self.group_while(c, &|next_char: &char| next_char.is_numeric());
 
-                match token.parse() {
+                match value.parse() {
                     Ok(val) => Token::Int(val),
                     Err(_) => Token::Illegal,
                 }
