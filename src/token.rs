@@ -3,6 +3,10 @@ pub enum Token {
     // Identifiers
     Ident(String),
 
+    // Literal
+    Int(isize),
+    UnsignedInt(usize),
+
     // Operators
     Assign,
     Plus,

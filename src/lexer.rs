@@ -37,11 +37,22 @@ impl<'a> Iterator for Lexer<'a> {
             '>' => Token::GreaterThan,
             _ if c.is_alphabetic() => {
                 let mut token = c.to_string();
-                while let Some(next_char) = self.input.next_if(|c| c.is_alphabetic()) {
-                    token.push(next_char)
+                while let Some(character) = self.input.next_if(|c| c.is_alphabetic()) {
+                    token.push(character)
                 }
 
                 Token::Ident(token)
+            }
+            _ if c.is_numeric() => {
+                let mut token = c.to_string();
+                while let Some(character) = self.input.next_if(|c| c.is_numeric()) {
+                    token.push(character)
+                }
+
+                match token.parse() {
+                    Ok(val) => Token::Int(val),
+                    Err(_) => Token::Illegal,
+                }
             }
             _ => Token::Illegal,
         })
@@ -85,6 +96,15 @@ mod tests {
             Token::Semicolon,
             Token::Ident("t".to_string()),
         ];
+
+        assert_eq!(tokens, expected_tokens);
+    }
+
+    #[test]
+    fn should_lex_integers() {
+        let tokens = Lexer::new("1234;4545").collect::<Vec<_>>();
+
+        let expected_tokens = vec![Token::Int(1234), Token::Semicolon, Token::Int(4545)];
 
         assert_eq!(tokens, expected_tokens);
     }
