@@ -32,7 +32,7 @@ impl<'a> Iterator for Lexer<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         let c = self.input.find(|c| !c.is_whitespace())?;
 
-        Some(match c {
+        let token = match c {
             '=' => Token::Assign,
             '+' => Token::Plus,
             '-' => Token::Minus,
@@ -60,7 +60,9 @@ impl<'a> Iterator for Lexer<'a> {
                 }
             }
             _ => Token::Illegal,
-        })
+        };
+
+        Some(token)
     }
 }
 
