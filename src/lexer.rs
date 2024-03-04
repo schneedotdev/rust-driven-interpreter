@@ -38,21 +38,17 @@ mod tests {
 
     #[test]
     fn should_lex_single_character_tokens() {
-        let mut lexer = Lexer::new("+=  -/* !");
+        let tokens = Lexer::new("+=  -/* !").collect::<Vec<Token>>();
 
-        let token = lexer.next();
-        assert_eq!(token, Some(Token::Plus));
-        let token = lexer.next();
-        assert_eq!(token, Some(Token::Assign));
-        let token = lexer.next();
-        assert_eq!(token, Some(Token::Minus));
-        let token = lexer.next();
-        assert_eq!(token, Some(Token::FSlash));
-        let token = lexer.next();
-        assert_eq!(token, Some(Token::Asterisk));
-        let token = lexer.next();
-        assert_eq!(token, Some(Token::Bang));
-        let token = lexer.next();
-        assert_eq!(token, None);
+        let expected_tokens = vec![
+            Token::Plus,
+            Token::Assign,
+            Token::Minus,
+            Token::FSlash,
+            Token::Asterisk,
+            Token::Bang,
+        ];
+
+        assert_eq!(tokens, expected_tokens);
     }
 }
