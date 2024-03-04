@@ -2,6 +2,8 @@
 pub enum Token {
     Illegal,
 
+    Ident(String),
+
     // Operators
     Assign,
     Plus,

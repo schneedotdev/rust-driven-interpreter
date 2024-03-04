@@ -1,15 +1,15 @@
 use crate::token::Token;
-use std::str::Chars;
+use std::{iter::Peekable, str::Chars};
 
 #[derive(Debug)]
 pub struct Lexer<'a> {
-    input: Chars<'a>,
+    input: Peekable<Chars<'a>>,
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
         Self {
-            input: input.chars(),
+            input: input.chars().peekable(),
         }
     }
 }
@@ -18,16 +18,24 @@ impl<'a> Iterator for Lexer<'a> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.input.find(|c| !c.is_whitespace()).and_then(|c| {
-            Some(match c {
-                '=' => Token::Assign,
-                '+' => Token::Plus,
-                '-' => Token::Minus,
-                '/' => Token::FSlash,
-                '!' => Token::Bang,
-                '*' => Token::Asterisk,
-                _ => Token::Illegal,
-            })
+        let c = self.input.find(|c| !c.is_whitespace())?;
+
+        Some(match c {
+            '=' => Token::Assign,
+            '+' => Token::Plus,
+            '-' => Token::Minus,
+            '/' => Token::FSlash,
+            '!' => Token::Bang,
+            '*' => Token::Asterisk,
+            _ if c.is_alphabetic() => {
+                let mut token = c.to_string();
+                while let Some(next_char) = self.input.next_if(|c| c.is_alphabetic()) {
+                    token.push(next_char)
+                }
+
+                Token::Ident(token)
+            }
+            _ => Token::Illegal,
         })
     }
 }
@@ -38,7 +46,7 @@ mod tests {
 
     #[test]
     fn should_lex_single_character_tokens() {
-        let tokens = Lexer::new("+=  -/* !").collect::<Vec<Token>>();
+        let tokens = Lexer::new("+=  -/* !").collect::<Vec<_>>();
 
         let expected_tokens = vec![
             Token::Plus,
@@ -48,6 +56,15 @@ mod tests {
             Token::Asterisk,
             Token::Bang,
         ];
+
+        assert_eq!(tokens, expected_tokens);
+    }
+
+    #[test]
+    fn should_lex_identifiers() {
+        let tokens = Lexer::new("let").collect::<Vec<_>>();
+
+        let expected_tokens = vec![Token::Ident("let".to_string())];
 
         assert_eq!(tokens, expected_tokens);
     }
