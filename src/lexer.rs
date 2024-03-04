@@ -31,19 +31,24 @@ impl<'a> Lexer<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
+    
     #[test]
-    fn should_parse_a_single_token() {
-        let token = Lexer::new("+").next_token().unwrap();
-        assert_eq!(token, Token::Plus);
-
-        let token = Lexer::new("-").next_token().unwrap();
-        assert_eq!(token, Token::Minus);
-    }
-
-    #[test]
-    fn should_parse_single_character_tokens() {
+    fn should_lex_single_character_tokens() {
         let mut lexer = Lexer::new("+=  -/* !");
-        todo!("parsing single character tokens for an entire string")
+        
+        let token = lexer.next_token();
+        assert_eq!(token, Some(Token::Plus));
+        let token = lexer.next_token();
+        assert_eq!(token, Some(Token::Assign));
+        let token = lexer.next_token();
+        assert_eq!(token, Some(Token::Minus));
+        let token = lexer.next_token();
+        assert_eq!(token, Some(Token::FSlash));
+        let token = lexer.next_token();
+        assert_eq!(token, Some(Token::Asterisk));
+        let token = lexer.next_token();
+        assert_eq!(token, Some(Token::Bang));
+        let token = lexer.next_token();
+        assert_eq!(token, None);
     }
 }
