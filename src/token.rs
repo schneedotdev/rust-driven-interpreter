@@ -26,6 +26,8 @@ pub enum Token {
     // Comparison
     LessThan,
     GreaterThan,
+    Eq,
+    NotEq,
 
     // Other
     Illegal,

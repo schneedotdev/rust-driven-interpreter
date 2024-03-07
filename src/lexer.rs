@@ -36,11 +36,25 @@ impl<'a> Iterator for Lexer<'a> {
         let (i, c) = self.chars.find(|(_, c)| !c.is_whitespace())?;
 
         let token = match c {
-            '=' => Token::Assign,
+            '=' => {
+                let not_eq = self.chars.next_if(|(_, c)| c.eq(&'='));
+
+                match not_eq {
+                    Some(_) => Token::Eq,
+                    None => Token::Assign,
+                }
+            }
             '+' => Token::Plus,
             '-' => Token::Minus,
             '/' => Token::FSlash,
-            '!' => Token::Bang,
+            '!' => {
+                let not_eq = self.chars.next_if(|&(_, c)| c.eq(&'='));
+
+                match not_eq {
+                    Some(_) => Token::NotEq,
+                    None => Token::Bang,
+                }
+            }
             '*' => Token::Asterisk,
             ';' => Token::Semicolon,
             ',' => Token::Comma,
@@ -55,7 +69,7 @@ impl<'a> Iterator for Lexer<'a> {
 
                 match Token::return_keyword(s) {
                     Some(k) => k,
-                    None => Token::Ident(s.into())
+                    None => Token::Ident(s.into()),
                 }
             }
             _ if c.is_numeric() => {
@@ -105,7 +119,11 @@ mod tests {
     fn should_lex_identifiers() {
         let tokens = Lexer::new("le;t").collect::<Vec<_>>();
 
-        let expected_tokens = vec![Token::Ident("le".into()), Token::Semicolon, Token::Ident("t".into())];
+        let expected_tokens = vec![
+            Token::Ident("le".into()),
+            Token::Semicolon,
+            Token::Ident("t".into()),
+        ];
 
         assert_eq!(tokens, expected_tokens);
     }
@@ -123,7 +141,23 @@ mod tests {
     fn should_identify_keyword_tokens() {
         let tokens = Lexer::new("let fn else true false if").collect::<Vec<_>>();
 
-        let expected_tokens = vec![Token::Let, Token::Function, Token::Else, Token::True, Token::False, Token::If];
+        let expected_tokens = vec![
+            Token::Let,
+            Token::Function,
+            Token::Else,
+            Token::True,
+            Token::False,
+            Token::If,
+        ];
+
+        assert_eq!(tokens, expected_tokens);
+    }
+
+    #[test]
+    fn should_lex_multi_char_operators() {
+        let tokens = Lexer::new("!= ==").collect::<Vec<_>>();
+
+        let expected_tokens = vec![Token::NotEq, Token::Eq];
 
         assert_eq!(tokens, expected_tokens);
     }
