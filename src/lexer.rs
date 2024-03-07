@@ -1,28 +1,33 @@
 use crate::token::Token;
-use std::{iter::Peekable, str::Chars};
+use std::{iter::Peekable, str::CharIndices};
 
 #[derive(Debug)]
 pub struct Lexer<'a> {
-    input: Peekable<Chars<'a>>,
+    input: &'a str,
+    chars: Peekable<CharIndices<'a>>,
 }
+
+// &str -> [s,t,r,i,n,g]
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
         Self {
-            input: input.chars().peekable(),
+            input,
+            chars: input.char_indices().peekable(),
         }
     }
 
-    fn group_while<F>(&mut self, start: char, condition: F) -> String
+    fn group_while<F>(&mut self, start: usize, c: char, condition: F) -> Option<&str>
     where
         F: Fn(char) -> bool,
     {
-        let mut group = start.to_string();
-        while let Some(character) = self.input.next_if(|&c| condition(c)) {
-            group.push(character)
+        let mut end = start + c.len_utf8();
+
+        while let Some((i, c)) = self.chars.next_if(|(_, c)| condition(*c)) {
+            end = i + c.len_utf8();
         }
 
-        group
+        return Some(&self.input[start..end]);
     }
 }
 
@@ -30,7 +35,7 @@ impl<'a> Iterator for Lexer<'a> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let c = self.input.find(|c| !c.is_whitespace())?;
+        let (i, c) = self.chars.find(|(_, c)| !c.is_whitespace())?;
 
         let token = match c {
             '=' => Token::Assign,
@@ -48,13 +53,13 @@ impl<'a> Iterator for Lexer<'a> {
             '<' => Token::LessThan,
             '>' => Token::GreaterThan,
             _ if c.is_alphabetic() => {
-                let value = self.group_while(c, char::is_alphabetic);
-                Token::Ident(value)
+                let value = self.group_while(i, c, char::is_alphabetic);
+                Token::Ident(value?.into())
             }
             _ if c.is_numeric() => {
-                let value = self.group_while(c, char::is_numeric);
+                let value = self.group_while(i, c, char::is_numeric);
 
-                match value.parse() {
+                match value?.parse() {
                     Ok(val) => Token::Int(val),
                     Err(_) => Token::Illegal,
                 }
@@ -98,11 +103,7 @@ mod tests {
     fn should_lex_identifiers() {
         let tokens = Lexer::new("le;t").collect::<Vec<_>>();
 
-        let expected_tokens = vec![
-            Token::Ident("le".to_string()),
-            Token::Semicolon,
-            Token::Ident("t".to_string()),
-        ];
+        let expected_tokens = vec![Token::Ident("le".into()), Token::Semicolon, Token::Ident("t".into())];
 
         assert_eq!(tokens, expected_tokens);
     }
