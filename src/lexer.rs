@@ -7,8 +7,6 @@ pub struct Lexer<'a> {
     chars: Peekable<CharIndices<'a>>,
 }
 
-// &str -> [s,t,r,i,n,g]
-
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
         Self {
@@ -27,7 +25,7 @@ impl<'a> Lexer<'a> {
             end = i + c.len_utf8();
         }
 
-        return Some(&self.input[start..end]);
+        Some(&self.input[start..end])
     }
 }
 
