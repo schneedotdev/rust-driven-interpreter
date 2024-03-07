@@ -27,6 +27,17 @@ impl<'a> Lexer<'a> {
 
         &self.input[start..end]
     }
+
+    fn process_comparison_token(
+        &mut self,
+        single_char_token: Token<'a>,
+        double_char_token: Token<'a>,
+    ) -> Token<'a> {
+        match self.chars.next_if(|(_, c)| c.eq(&'=')) {
+            Some(_) => double_char_token,
+            None => single_char_token,
+        }
+    }
 }
 
 impl<'a> Iterator for Lexer<'a> {
@@ -36,25 +47,11 @@ impl<'a> Iterator for Lexer<'a> {
         let (i, c) = self.chars.find(|(_, c)| !c.is_whitespace())?;
 
         let token = match c {
-            '=' => {
-                let not_eq = self.chars.next_if(|(_, c)| c.eq(&'='));
-
-                match not_eq {
-                    Some(_) => Token::Eq,
-                    None => Token::Assign,
-                }
-            }
+            '=' => self.process_comparison_token(Token::Assign, Token::Eq),
             '+' => Token::Plus,
             '-' => Token::Minus,
             '/' => Token::FSlash,
-            '!' => {
-                let not_eq = self.chars.next_if(|&(_, c)| c.eq(&'='));
-
-                match not_eq {
-                    Some(_) => Token::NotEq,
-                    None => Token::Bang,
-                }
-            }
+            '!' => self.process_comparison_token(Token::Bang, Token::NotEq),
             '*' => Token::Asterisk,
             ';' => Token::Semicolon,
             ',' => Token::Comma,
@@ -62,22 +59,8 @@ impl<'a> Iterator for Lexer<'a> {
             ')' => Token::RParen,
             '{' => Token::LBrace,
             '}' => Token::RBrace,
-            '<' => {
-                let not_eq = self.chars.next_if(|&(_, c)| c.eq(&'='));
-
-                match not_eq {
-                    Some(_) => Token::LessThanEq,
-                    None => Token::LessThan,
-                }
-            }
-            '>' => {
-                let not_eq = self.chars.next_if(|&(_, c)| c.eq(&'='));
-
-                match not_eq {
-                    Some(_) => Token::GreaterThanEq,
-                    None => Token::GreaterThan,
-                }
-            }
+            '<' => self.process_comparison_token(Token::LessThan, Token::LessThanEq),
+            '>' => self.process_comparison_token(Token::GreaterThan, Token::GreaterThanEq),
             _ if c.is_alphabetic() => {
                 let s = self.group_while(i, c, char::is_alphabetic);
                 Token::return_keyword_or_ident(s)
