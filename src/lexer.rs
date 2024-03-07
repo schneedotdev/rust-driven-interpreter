@@ -66,9 +66,7 @@ impl<'a> Iterator for Lexer<'a> {
                 Token::return_keyword_or_ident(s)
             }
             _ if c.is_numeric() => {
-                let value = self.group_while(i, c, char::is_numeric);
-
-                match value.parse() {
+                match self.group_while(i, c, char::is_numeric).parse() {
                     Ok(val) => Token::Int(val),
                     Err(_) => Token::Illegal,
                 }
