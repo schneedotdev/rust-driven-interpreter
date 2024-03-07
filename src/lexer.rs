@@ -15,7 +15,7 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    fn group_while<F>(&mut self, start: usize, c: char, condition: F) -> &str
+    fn group_while<F>(&mut self, start: usize, c: char, condition: F) -> &'a str
     where
         F: Fn(char) -> bool,
     {
@@ -30,7 +30,7 @@ impl<'a> Lexer<'a> {
 }
 
 impl<'a> Iterator for Lexer<'a> {
-    type Item = Token;
+    type Item = Token<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let (i, c) = self.chars.find(|(_, c)| !c.is_whitespace())?;
@@ -62,15 +62,25 @@ impl<'a> Iterator for Lexer<'a> {
             ')' => Token::RParen,
             '{' => Token::LBrace,
             '}' => Token::RBrace,
-            '<' => Token::LessThan,
-            '>' => Token::GreaterThan,
+            '<' => {
+                let not_eq = self.chars.next_if(|&(_, c)| c.eq(&'='));
+
+                match not_eq {
+                    Some(_) => Token::LessThanEq,
+                    None => Token::LessThan,
+                }
+            }
+            '>' => {
+                let not_eq = self.chars.next_if(|&(_, c)| c.eq(&'='));
+
+                match not_eq {
+                    Some(_) => Token::GreaterThanEq,
+                    None => Token::GreaterThan,
+                }
+            }
             _ if c.is_alphabetic() => {
                 let s = self.group_while(i, c, char::is_alphabetic);
-
-                match Token::return_keyword(s) {
-                    Some(k) => k,
-                    None => Token::Ident(s.into()),
-                }
+                Token::return_keyword_or_ident(s)
             }
             _ if c.is_numeric() => {
                 let value = self.group_while(i, c, char::is_numeric);
@@ -155,9 +165,14 @@ mod tests {
 
     #[test]
     fn should_lex_multi_char_operators() {
-        let tokens = Lexer::new("!= ==").collect::<Vec<_>>();
+        let tokens = Lexer::new("!= == >= <=").collect::<Vec<_>>();
 
-        let expected_tokens = vec![Token::NotEq, Token::Eq];
+        let expected_tokens = vec![
+            Token::NotEq,
+            Token::Eq,
+            Token::GreaterThanEq,
+            Token::LessThanEq,
+        ];
 
         assert_eq!(tokens, expected_tokens);
     }

@@ -1,7 +1,7 @@
 #[derive(Debug, PartialEq)]
-pub enum Token {
+pub enum Token<'a> {
     // Identifiers
-    Ident(String),
+    Ident(&'a str),
 
     // Literal
     Int(isize),
@@ -28,24 +28,25 @@ pub enum Token {
     GreaterThan,
     Eq,
     NotEq,
+    LessThanEq,
+    GreaterThanEq,
 
     // Other
     Illegal,
 
     // Keywords
     Let,
-    Function, 
+    Function,
     Return,
     If,
     Else,
     True,
-    False
+    False,
 }
 
-
-impl Token {
-    pub fn return_keyword(s: &str) -> Option<Token> {
-        Some(match s {
+impl Token<'_> {
+    pub fn return_keyword_or_ident(s: &str) -> Token<'_> {
+        match s {
             "let" => Token::Let,
             "fn" => Token::Function,
             "return" => Token::Return,
@@ -53,7 +54,7 @@ impl Token {
             "else" => Token::Else,
             "true" => Token::True,
             "false" => Token::False,
-            _ => return None
-        })
+            _ => Token::Ident(s),
+        }
     }
 }
