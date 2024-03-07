@@ -5,7 +5,6 @@ pub enum Token<'a> {
 
     // Literal
     Int(isize),
-    UnsignedInt(usize),
 
     // Operators
     Assign,
