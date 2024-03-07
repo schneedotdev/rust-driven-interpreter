@@ -51,8 +51,12 @@ impl<'a> Iterator for Lexer<'a> {
             '<' => Token::LessThan,
             '>' => Token::GreaterThan,
             _ if c.is_alphabetic() => {
-                let value = self.group_while(i, c, char::is_alphabetic);
-                Token::Ident(value.into())
+                let s = self.group_while(i, c, char::is_alphabetic);
+
+                match Token::return_keyword(s) {
+                    Some(k) => k,
+                    None => Token::Ident(s.into())
+                }
             }
             _ if c.is_numeric() => {
                 let value = self.group_while(i, c, char::is_numeric);
@@ -111,6 +115,15 @@ mod tests {
         let tokens = Lexer::new("1234;4545").collect::<Vec<_>>();
 
         let expected_tokens = vec![Token::Int(1234), Token::Semicolon, Token::Int(4545)];
+
+        assert_eq!(tokens, expected_tokens);
+    }
+
+    #[test]
+    fn should_identify_keyword_tokens() {
+        let tokens = Lexer::new("let fn else true false if").collect::<Vec<_>>();
+
+        let expected_tokens = vec![Token::Let, Token::Function, Token::Else, Token::True, Token::False, Token::If];
 
         assert_eq!(tokens, expected_tokens);
     }
